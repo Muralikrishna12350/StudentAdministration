@@ -20,16 +20,19 @@ import org.springframework.web.bind.annotation.RestController;
 import com.org.StudentAdministration.entity.Student;
 import com.org.StudentAdministration.service.StudentService;
 
-import lombok.RequiredArgsConstructor;
+
 
 
 @RestController
 @RequestMapping("/students")
-@RequiredArgsConstructor
 public class StudentController {
 
 	@Autowired
 	private final  StudentService studentService;
+	
+	public StudentController(StudentService studentService) {
+        this.studentService = studentService;
+    }
 	
 	@PostMapping
 	public ResponseEntity<Student> createStudent(@RequestBody Student student)

@@ -10,22 +10,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.ReflectionUtils;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.org.StudentAdministration.entity.Student;
 import com.org.StudentAdministration.repository.StudentRepository;
-
-
-
-
 
 @Slf4j
 @Service
 public class StudentService {
 
     private static final Logger log = LoggerFactory.getLogger(StudentService.class);
+    @Autowired
     private final StudentRepository studentRepository;
 
+   private PasswordEncoder passwordEncoder;
 
     @Autowired
     public StudentService(StudentRepository studentRepository) {
@@ -40,6 +39,7 @@ public class StudentService {
         log.trace("log trace");
        boolean sName=  validateStudentName(student.getName());
        if(sName){
+           student.setPassword(passwordEncoder.encode(student.getPassword()));
         return studentRepository.save(student);
        }else{
            throw  new RuntimeException("Invalid student name");

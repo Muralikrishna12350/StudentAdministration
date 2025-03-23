@@ -20,7 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.org.StudentAdministration.entity.Student;
 import com.org.StudentAdministration.service.StudentService;
 
+import lombok.RequiredArgsConstructor;
 
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
 
 
 @RestController
@@ -29,40 +32,41 @@ public class StudentController {
 
 	@Autowired
 	private final  StudentService studentService;
-	
-	public StudentController(StudentService studentService) {
+
+    public StudentController(StudentService studentService) {
         this.studentService = studentService;
     }
-	
-	@PostMapping
+
+    @PostMapping("/create")
 	public ResponseEntity<Student> createStudent(@RequestBody Student student)
 	{
+		System.out.println(student);
 		Student savedStudent= studentService.saveStudent(student);
-		
+		System.out.println(student);
 		return ResponseEntity.status(HttpStatus.CREATED).body(savedStudent);
 	}
-	
-	@GetMapping
+
+	@GetMapping("/getallstudents")
 	public ResponseEntity<List<Student>> getStudents(){
-		 List<Student> students = studentService.getStudents();
-		 return ResponseEntity.ok(students);
-		 
-		 
+		List<Student> students = studentService.getStudents();
+		return ResponseEntity.ok(students);
+
+
 	}
-	
-	 @GetMapping("{id}")
-	    public ResponseEntity<Student> getStudentById(@PathVariable int id) {
-	        Optional<Student> student = studentService.getStudentById(id);	        
-	     return   student.map(ResponseEntity::ok).orElseGet(()-> ResponseEntity.notFound().build());
-	    }
-	 
+
+	@GetMapping("{id}")
+	public ResponseEntity<Student> getStudentById(@PathVariable int id) {
+		Optional<Student> student = studentService.getStudentById(id);
+		return   student.map(ResponseEntity::ok).orElseGet(()-> ResponseEntity.notFound().build());
+	}
+
 	@DeleteMapping("{id}")
 	public ResponseEntity<Void> deleteStudent(@PathVariable int id) {
 		studentService.deleteStudent(id);
 		return ResponseEntity.noContent().build();
-		
+
 	}
-	
+
 	@PutMapping("{id}")
 	public ResponseEntity<Student> updateStudent(@PathVariable int id, @RequestBody Student student) {
 		Student updateStudent = studentService.updateStudent(id, student);
@@ -73,5 +77,15 @@ public class StudentController {
 		Student updateStudentByFields = studentService.updateStudentByFields(id, field);
 		return ResponseEntity.ok(updateStudentByFields);
 	}
-	
+
+//	@PostMapping("/login")
+//	public String login(@RequestBody Student student){
+//		return studentService.verify(student);
+//	}
+
+	@GetMapping("/home")
+	public String greet(HttpServletRequest request){
+		return "Welcome to student Administration " + request.getSession().getId();
+	}
+
 }

@@ -9,22 +9,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.data.util.ReflectionUtils;
-//import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.org.StudentAdministration.entity.Student;
 import com.org.StudentAdministration.repository.StudentRepository;
-
-
-
-
 
 @Slf4j
 @Service
@@ -34,21 +24,12 @@ public class StudentService {
     @Autowired
     private final StudentRepository studentRepository;
 
-    @Autowired
-    private final AuthenticationManager authManager;
-
-    @Autowired
    private PasswordEncoder passwordEncoder;
 
-   @Autowired
-   private JWTService jwtService;
-
     @Autowired
-    public StudentService(StudentRepository studentRepository, AuthenticationManager authManager) {
+    public StudentService(StudentRepository studentRepository) {
         this.studentRepository = studentRepository;
-        this.authManager = authManager;
     }
-
 
     public Student saveStudent(Student student) {
 
@@ -63,7 +44,6 @@ public class StudentService {
        }else{
            throw  new RuntimeException("Invalid student name");
        }
-       // return studentRepository.save(student);
     }
 
     public List<Student> getStudents(){
@@ -87,7 +67,6 @@ public class StudentService {
     }
 
     private boolean validateStudentName(String name){
-
         return name!=null && !name.isEmpty();
     }
     public Student updateStudentByFields(int id,Map<String,Object>field) {
@@ -107,13 +86,4 @@ public class StudentService {
 
     }
 
-    public String verify(Student student) {
-        Authentication authentication=
-                authManager.authenticate(new UsernamePasswordAuthenticationToken(student.getName(), student.getPassword()));
-
-        if(authentication.isAuthenticated()){
-            return jwtService.generateToken(student.getName());
-        }
-        else return "fail";
-    }
 }

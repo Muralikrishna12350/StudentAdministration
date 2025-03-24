@@ -1,13 +1,15 @@
 package com.org.StudentAdministration.entity;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
-@Table(name = "mystudents2")
+@Table(name = "mystudents")
 public class Student {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	//@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 	private String name;
 	
@@ -20,10 +22,6 @@ public class Student {
 	public Student() {
 		super();
 	}
-
-	public Student(Long id, String name, String s, String number, String password) {
-	}
-
 	public int getId() {
 		return id;
 	}

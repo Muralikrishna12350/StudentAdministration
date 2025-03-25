@@ -101,19 +101,6 @@ public class StudentService {
             });
             return studentRepository.save(ep.get());
         }
-
         return null;
-
-
-    }
-
-    public String verify(Student student) {
-        Authentication authentication=
-                authManager.authenticate(new UsernamePasswordAuthenticationToken(student.getName(), student.getPassword()));
-
-        if(authentication.isAuthenticated()){
-            return jwtService.generateToken(student.getName());
-        }
-        else return "fail";
     }
 }

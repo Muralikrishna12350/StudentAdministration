@@ -1,5 +1,6 @@
 package com.org.StudentAdministration.controller;
 
+import com.org.StudentAdministration.entity.LoginRequest;
 import com.org.StudentAdministration.entity.Student;
 import com.org.StudentAdministration.entity.User;
 import com.org.StudentAdministration.repository.StudentRepository;
@@ -17,12 +18,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-    @Autowired
-    private UserRepository userRepository;
+ 
 
     @Autowired
     private StudentRepository studentRepository;
@@ -33,47 +35,33 @@ public class AuthController {
     @Autowired
     private JWTService jwtService;
 
+
     @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestBody User user) {
-        if (userRepository.findByName(user.getName()).isPresent()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User already exists!");
+    public ResponseEntity<String> register(@RequestBody Student student) {
+        if (studentRepository.findByName(student.getName()).isPresent()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("name already registered!");
         }
 
+        student.setPassword(passwordEncoder.encode(student.getPassword()));
+        student.setRole("ROLE_USER");
+        studentRepository.save(student);
 
-         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
-
-
-        Student student = new Student();
-
-        student.setName(user.getName());
-        student.setEmail(user.getName() + "@gmail.com");
-        student.setMobileNumber("1234567890");
-        student.setPassword(user.getPassword());
-
-        studentRepository.save(student); // Save Student
-
-        return ResponseEntity.ok("User and Student registered successfully!");
+        return ResponseEntity.ok("User registered successfully!");
     }
 
-
     @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody User user) {
-        UserDetails userDetails = userRepository.findByName(user.getName())
-                .map(u -> new org.springframework.security.core.userdetails.User(
-                        u.getName(),
-                        u.getPassword(),
-                        Collections.emptyList()
-                ))
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+        Optional<Student> studentOpt = studentRepository.findByName(loginRequest.getName());
 
-
-        if (!passwordEncoder.matches(user.getPassword(), userDetails.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        if (studentOpt.isPresent()) {
+            Student student = studentOpt.get();
+            if (passwordEncoder.matches(loginRequest.getPassword(), student.getPassword())) {
+                String token = jwtService.generateToken(student.getName());
+                return ResponseEntity.ok(Map.of("token", token));
+            }
         }
 
-        String token = jwtService.generateToken(user.getName());
-        return ResponseEntity.ok(Collections.singletonMap("token", token));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
     }
 }
 

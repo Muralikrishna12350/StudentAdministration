@@ -1,33 +1,15 @@
 package com.org.StudentAdministration.entity;
 
-
-
-import javax.persistence.*;
-
-@Entity
-@Table(name = "users")
-public class User {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class LoginRequest {
 
     private String name;
     private String password;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public void setEmail(String name) {
         this.name = name;
     }
 
@@ -41,9 +23,8 @@ public class User {
 
     @Override
     public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
+        return "LoginRequest{" +
+                "email='" + name + '\'' +
                 ", password='" + password + '\'' +
                 '}';
     }

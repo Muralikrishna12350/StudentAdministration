@@ -23,6 +23,8 @@ public class JWTService {
 
    private String seceretkey="";
 
+   /* It is used to generate a secrete key dynamically every time application starts */
+
    public JWTService(){
        try {
            KeyGenerator keygen= KeyGenerator.getInstance("HmacSHA256");
@@ -34,6 +36,9 @@ public class JWTService {
    }
 
 
+ /* This method is used to generate a JWT token using given particular name this token is later used for authentication
+ * and authorization  */
+
 
     public String generateToken(String username) {
         Map<String, Object> claims = new HashMap<>();
@@ -43,17 +48,20 @@ public class JWTService {
                 .add(claims)
                 .subject(username)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + (60 * 60 * 1000))) // 1 hour in milliseconds
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 1 hour in milliseconds
                 .and()
                 .signWith(getKey())
                 .compact();
     }
 
+   /*  It converts a Base64-encoded secret key into a format that the JWT library (jjwt) can use for signing */
 
     private SecretKey getKey() {
         byte[] ks= Decoders.BASE64.decode(seceretkey);
         return Keys.hmacShaKeyFor(ks);
     }
+
+    /* Here extracting the user information from jwt token  */
 
     public String extractUserName(String token) {
         // extract the username from jwt token
@@ -73,10 +81,16 @@ public class JWTService {
                 .getPayload();
     }
 
+    /* Here validating the token by checking username is matching with the userDetails.getUsername()
+    * and by checking expiration  */
+
     public boolean validateToken(String token, UserDetails userDetails) {
-        final String userName = extractUserName(token);
-        return (userName.equals(userDetails.getUsername()) && !isTokenExpired(token));
+            String username = extractUserName(token);
+            Claims claims = extractAllClaims(token);
+            return (username.equals(userDetails.getUsername()) && !claims.getExpiration().before(new Date()));
+
     }
+
 
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());

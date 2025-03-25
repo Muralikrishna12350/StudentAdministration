@@ -37,7 +37,7 @@ public class StudentController {
         this.studentService = studentService;
     }
 
-    @PostMapping("/create")
+    @PostMapping
 	public ResponseEntity<Student> createStudent(@RequestBody Student student)
 	{
 		System.out.println(student);
@@ -46,12 +46,10 @@ public class StudentController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(savedStudent);
 	}
 
-	@GetMapping("/getallstudents")
+	@GetMapping
 	public ResponseEntity<List<Student>> getStudents(){
 		List<Student> students = studentService.getStudents();
 		return ResponseEntity.ok(students);
-
-
 	}
 
 	@GetMapping("{id}")
@@ -78,10 +76,7 @@ public class StudentController {
 		return ResponseEntity.ok(updateStudentByFields);
 	}
 
-//	@PostMapping("/login")
-//	public String login(@RequestBody Student student){
-//		return studentService.verify(student);
-//	}
+
 
 	@GetMapping("/home")
 	public String greet(HttpServletRequest request){

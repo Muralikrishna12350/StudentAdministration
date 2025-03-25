@@ -31,29 +31,26 @@ public class SecurityConfig {
     @Autowired
     private JwtFilter jwtFilter;
 
-
     @Bean
     public PasswordEncoder passwordEncoder() {
 
         return new BCryptPasswordEncoder();
     }
-
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf().disable()
-                .authorizeRequests()
-                .antMatchers("/students/getallstudents").authenticated()  // ✅ Require authentication
-                .antMatchers("/auth/register", "/auth/login").permitAll() // ✅ Allow login & register
-                .anyRequest().permitAll()
+                .authorizeHttpRequests()
+                .antMatchers("/auth/login", "/auth/register").permitAll()
+                .antMatchers("/students")
+                .authenticated()
                 .and()
-                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // ✅ Stateless session
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class); // ✅ Add JWT filter
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class); // Add JWT Filter
 
         return http.build();
     }
-
 
     @Bean
     public HttpFirewall relaxedHttpFirewall() {
@@ -61,8 +58,6 @@ public class SecurityConfig {
         firewall.setAllowedHttpMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         return firewall;
     }
-
-
     @Bean
     public DaoAuthenticationProvider authenticationProvider(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -76,6 +71,5 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
 
     }
-
 
 }

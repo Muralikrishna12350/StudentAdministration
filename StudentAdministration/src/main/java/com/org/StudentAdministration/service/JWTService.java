@@ -9,8 +9,6 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import javax.websocket.Decoder;
-import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Date;
@@ -21,23 +19,23 @@ import java.util.function.Function;
 @Service
 public class JWTService {
 
-   private String seceretkey="";
+    private String seceretkey = "";
 
-   /* It is used to generate a secrete key dynamically every time application starts */
+    /* It is used to generate a secrete key dynamically every time application starts */
 
-   public JWTService(){
-       try {
-           KeyGenerator keygen= KeyGenerator.getInstance("HmacSHA256");
-           SecretKey skey= keygen.generateKey();
-           seceretkey=Base64.getEncoder().encodeToString(skey.getEncoded());
-       } catch (NoSuchAlgorithmException e) {
-           throw new RuntimeException(e);
-       }
-   }
+    public JWTService() {
+        try {
+            KeyGenerator keygen = KeyGenerator.getInstance("HmacSHA256");
+            SecretKey skey = keygen.generateKey();
+            seceretkey = Base64.getEncoder().encodeToString(skey.getEncoded());
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 
- /* This method is used to generate a JWT token using given particular name this token is later used for authentication
- * and authorization  */
+    /* This method is used to generate a JWT token using given particular name this token is later used for authentication
+     * and authorization  */
 
 
     public String generateToken(String username) {
@@ -54,10 +52,10 @@ public class JWTService {
                 .compact();
     }
 
-   /*  It converts a Base64-encoded secret key into a format that the JWT library (jjwt) can use for signing */
+    /*  It converts a Base64-encoded secret key into a format that the JWT library (jjwt) can use for signing */
 
-    private SecretKey getKey() {
-        byte[] ks= Decoders.BASE64.decode(seceretkey);
+    SecretKey getKey() {
+        byte[] ks = Decoders.BASE64.decode(seceretkey);
         return Keys.hmacShaKeyFor(ks);
     }
 
@@ -73,7 +71,7 @@ public class JWTService {
         return claimResolver.apply(claims);
     }
 
-    private Claims extractAllClaims(String token) {
+    Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .verifyWith(getKey())
                 .build()
@@ -82,12 +80,12 @@ public class JWTService {
     }
 
     /* Here validating the token by checking username is matching with the userDetails.getUsername()
-    * and by checking expiration  */
+     * and by checking expiration  */
 
     public boolean validateToken(String token, UserDetails userDetails) {
-            String username = extractUserName(token);
-            Claims claims = extractAllClaims(token);
-            return (username.equals(userDetails.getUsername()) && !claims.getExpiration().before(new Date()));
+        String username = extractUserName(token);
+        Claims claims = extractAllClaims(token);
+        return (username.equals(userDetails.getUsername()) && !claims.getExpiration().before(new Date()));
 
     }
 

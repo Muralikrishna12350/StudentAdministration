@@ -20,34 +20,30 @@ import org.springframework.web.bind.annotation.RestController;
 import com.org.StudentAdministration.entity.Student;
 import com.org.StudentAdministration.service.StudentService;
 
-import lombok.RequiredArgsConstructor;
 
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
-
 
 @RestController
 @RequestMapping("/students")
 public class StudentController {
 
 	@Autowired
-	private final  StudentService studentService;
+	private final StudentService studentService;
 
-    public StudentController(StudentService studentService) {
-        this.studentService = studentService;
-    }
+	public StudentController(StudentService studentService) {
+		this.studentService = studentService;
+	}
 
-    @PostMapping
-	public ResponseEntity<Student> createStudent(@RequestBody Student student)
-	{
+	@PostMapping
+	public ResponseEntity<Student> createStudent(@RequestBody Student student) {
 		System.out.println(student);
-		Student savedStudent= studentService.saveStudent(student);
+		Student savedStudent = studentService.saveStudent(student);
 		System.out.println(student);
 		return ResponseEntity.status(HttpStatus.CREATED).body(savedStudent);
 	}
 
 	@GetMapping
-	public ResponseEntity<List<Student>> getStudents(){
+	public ResponseEntity<List<Student>> getStudents() {
 		List<Student> students = studentService.getStudents();
 		return ResponseEntity.ok(students);
 	}
@@ -55,7 +51,7 @@ public class StudentController {
 	@GetMapping("{id}")
 	public ResponseEntity<Student> getStudentById(@PathVariable int id) {
 		Optional<Student> student = studentService.getStudentById(id);
-		return   student.map(ResponseEntity::ok).orElseGet(()-> ResponseEntity.notFound().build());
+		return student.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
 	}
 
 	@DeleteMapping("{id}")
@@ -70,16 +66,15 @@ public class StudentController {
 		Student updateStudent = studentService.updateStudent(id, student);
 		return ResponseEntity.ok(updateStudent);
 	}
+
 	@PatchMapping("{id}")
-	public ResponseEntity<Student> updatefarmerByfields(@PathVariable int id,@RequestBody  Map<String,Object>field) {
+	public ResponseEntity<Student> updatefarmerByfields(@PathVariable int id, @RequestBody Map<String, Object> field) {
 		Student updateStudentByFields = studentService.updateStudentByFields(id, field);
 		return ResponseEntity.ok(updateStudentByFields);
 	}
 
-
-
 	@GetMapping("/home")
-	public String greet(HttpServletRequest request){
+	public String greet(HttpServletRequest request) {
 		return "Welcome to student Administration " + request.getSession().getId();
 	}
 

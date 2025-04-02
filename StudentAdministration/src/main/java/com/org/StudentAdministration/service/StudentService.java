@@ -9,111 +9,91 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.data.util.ReflectionUtils;
-//import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.org.StudentAdministration.entity.Student;
 import com.org.StudentAdministration.repository.StudentRepository;
 
-
-
-
-
 @Slf4j
 @Service
 public class StudentService {
 
-    private static final Logger log = LoggerFactory.getLogger(StudentService.class);
-    @Autowired
-    private final StudentRepository studentRepository;
+	private static final Logger log = LoggerFactory.getLogger(StudentService.class);
+	@Autowired
+	private final StudentRepository studentRepository;
 
-    @Autowired
-    private final AuthenticationManager authManager;
+	@Autowired
+	private final AuthenticationManager authManager;
 
-    @Autowired
-   private PasswordEncoder passwordEncoder;
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
-   @Autowired
-   private JWTService jwtService;
+	@Autowired
+	private JWTService jwtService;
 
-    @Autowired
-    public StudentService(StudentRepository studentRepository, AuthenticationManager authManager) {
-        this.studentRepository = studentRepository;
-        this.authManager = authManager;
-    }
+	@Autowired
+	public StudentService(StudentRepository studentRepository, AuthenticationManager authManager) {
+		this.studentRepository = studentRepository;
+		this.authManager = authManager;
+	}
 
+	public Student saveStudent(Student student) {
 
-    public Student saveStudent(Student student) {
+		log.error("log error");
+		log.warn("log warn");
+		log.info("log debug");
+		log.trace("log trace");
+		boolean sName = validateStudentName(student.getName());
+		if (sName) {
+			student.setPassword(passwordEncoder.encode(student.getPassword()));
+			return studentRepository.save(student);
+		} else {
+			throw new RuntimeException("Invalid student name");
+		}
+		// return studentRepository.save(student);
+	}
 
-        log.error("log error");
-        log.warn("log warn");
-        log.info("log debug");
-        log.trace("log trace");
-       boolean sName=  validateStudentName(student.getName());
-       if(sName){
-           student.setPassword(passwordEncoder.encode(student.getPassword()));
-        return studentRepository.save(student);
-       }else{
-           throw  new RuntimeException("Invalid student name");
-       }
-       // return studentRepository.save(student);
-    }
+	public List<Student> getStudents() {
+		return studentRepository.findAll();
+	}
 
-    public List<Student> getStudents(){
-        return studentRepository.findAll();
-    }
+	public Optional<Student> getStudentById(int id) {
+		return studentRepository.findById(id);
+	}
 
-    public Optional<Student> getStudentById(int id) {
-        return studentRepository.findById(id);
-    }
+	public Student updateStudent(int id, Student student) {
+		if (studentRepository.existsById(id)) {
+			student.setId(id);
+			return studentRepository.save(student);
+		}
+		return null;
+	}
 
-    public Student updateStudent(int id, Student student) {
-        if(studentRepository.existsById(id)) {
-            student.setId(id);
-            return studentRepository.save(student);
-        }
-        return null;
-    }
-    public void deleteStudent(int id) {
+	public void deleteStudent(int id) {
 
-        studentRepository.deleteById(id);
-    }
+		studentRepository.deleteById(id);
+	}
 
-    private boolean validateStudentName(String name){
+	private boolean validateStudentName(String name) {
 
-        return name!=null && !name.isEmpty();
-    }
-    public Student updateStudentByFields(int id,Map<String,Object>field) {
+		return name != null && !name.isEmpty();
+	}
 
-        Optional<Student> ep=studentRepository.findById(id);
-        if(ep.isPresent()) {
-            field.forEach((key,value)->{;
-                Field f=ReflectionUtils.findRequiredField(Student.class, key);
-                f.setAccessible(true);
-                ReflectionUtils.setField(f, ep.get(), value);
-            });
-            return studentRepository.save(ep.get());
-        }
+	public Student updateStudentByFields(int id, Map<String, Object> field) {
 
-        return null;
-
-
-    }
-
-    public String verify(Student student) {
-        Authentication authentication=
-                authManager.authenticate(new UsernamePasswordAuthenticationToken(student.getName(), student.getPassword()));
-
-        if(authentication.isAuthenticated()){
-            return jwtService.generateToken(student.getName());
-        }
-        else return "fail";
-    }
+		Optional<Student> ep = studentRepository.findById(id);
+		if (ep.isPresent()) {
+			field.forEach((key, value) -> {
+				;
+				Field f = ReflectionUtils.findRequiredField(Student.class, key);
+				f.setAccessible(true);
+				ReflectionUtils.setField(f, ep.get(), value);
+			});
+			return studentRepository.save(ep.get());
+		}
+		return null;
+	}
 }

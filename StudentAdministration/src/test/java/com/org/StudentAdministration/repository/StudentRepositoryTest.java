@@ -1,6 +1,5 @@
 package com.org.StudentAdministration.repository;
 
-import com.org.StudentAdministration.config.SecurityConfig;
 import com.org.StudentAdministration.entity.Student;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -9,23 +8,23 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@ExtendWith(SpringExtension.class)
+
 @DataJpaTest
-@Import(SecurityConfig.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@TestPropertySource(locations = "classpath:application-test.properties") 
+@TestPropertySource(locations = "classpath:application-test.properties")
+@ExtendWith(SpringExtension.class)
 public class StudentRepositoryTest {
 
     @Autowired
     private StudentRepository studentRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
 
     @Test
     void testSaveStudent() {
@@ -50,6 +49,7 @@ public class StudentRepositoryTest {
         student.setEmail("kaju@gmail.com");
         student.setMobileNumber("67677");
 
+        // Set raw password
         String rawPassword = "kaju@123";
         student.setPassword(passwordEncoder.encode(rawPassword));
 
@@ -59,9 +59,10 @@ public class StudentRepositoryTest {
         assertNotNull(savedStudent);
         assertNotNull(savedStudent.getId());
 
+        // check the stored password is not the plain text password
         assertNotEquals(rawPassword, savedStudent.getPassword());
 
-        
+        // Verify that the stored password matches the raw password when encoded
         assertTrue(passwordEncoder.matches(rawPassword, savedStudent.getPassword()));
     }
 }

@@ -2,34 +2,45 @@ package com.org.StudentAdministration.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.org.StudentAdministration.entity.Student;
+import com.org.StudentAdministration.service.JWTService;
 import com.org.StudentAdministration.service.StudentService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import org.mockito.Mockito;
 import java.util.Optional;
 
-@WebMvcTest(StudentController.class) // Loads only StudentController for testing
+@SpringBootTest
+@AutoConfigureMockMvc(addFilters = false)
 public class StudentControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
-    private StudentService studentService;  //   @MockBean to inject the mock service
+    private StudentService studentService;
+
+    @MockBean
+    private JWTService jwtService;
 
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Test // this for response handling test
+    @MockBean
+    private PasswordEncoder passwordEncoder;
+
+    @MockBean
+    private AuthenticationManager authenticationManager;
+
+    @Test
     void testGetStudentById_ShouldReturnStudent() throws Exception {
-        // Arrange: Create a mock student
         Student student = new Student();
         student.setId(200);
         student.setName("rrr");
@@ -37,11 +48,7 @@ public class StudentControllerTest {
         student.setMobileNumber("65677");
         student.setPassword("rrr@123");
 
-        Optional<Student> optionalStudent = Optional.of(student);
-
-
-        Mockito.when(studentService.getStudentById(200)).thenReturn(optionalStudent);
-
+        Mockito.when(studentService.getStudentById(200)).thenReturn(Optional.of(student));
 
         mockMvc.perform(get("/students/200"))
                 .andExpect(status().isOk())
@@ -52,10 +59,8 @@ public class StudentControllerTest {
                 .andExpect(jsonPath("$.password").value("rrr@123"));
     }
 
-
-    @Test // this is for requesting handling test
+    @Test
     void testCreateStudent_ShouldReturnCreated() throws Exception {
-
         Student student = new Student();
         student.setId(110);
         student.setName("raj");
@@ -63,18 +68,14 @@ public class StudentControllerTest {
         student.setMobileNumber("123456");
         student.setPassword("raj@123");
 
-
-        // here Converting  to JSON
         String studentJson = objectMapper.writeValueAsString(student);
 
-        // Mocking the service response
         Mockito.when(studentService.saveStudent(Mockito.any())).thenReturn(student);
-
 
         mockMvc.perform(post("/students")
                         .contentType("application/json")
                         .content(studentJson))
-                .andExpect(status().isCreated()) // 201 response
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(110))
                 .andExpect(jsonPath("$.name").value("raj"))
                 .andExpect(jsonPath("$.email").value("raj@gmail.com"))
@@ -82,9 +83,8 @@ public class StudentControllerTest {
                 .andExpect(jsonPath("$.password").value("raj@123"));
     }
 
-    @Test // this is for Validate Request Handling PUT
+    @Test
     void testUpdateStudent_ShouldReturnUpdatedStudent() throws Exception {
-        //  Existing student
         Student student = new Student();
         student.setId(110);
         student.setName("rajuu");
@@ -92,22 +92,17 @@ public class StudentControllerTest {
         student.setMobileNumber("123456");
         student.setPassword("raj@123");
 
-        // here  Converting  to JSON
         String studentJson = objectMapper.writeValueAsString(student);
 
-        // Mocking the service response
         Mockito.when(studentService.updateStudent(Mockito.eq(110), Mockito.any())).thenReturn(student);
-
 
         mockMvc.perform(put("/students/110")
                         .contentType("application/json")
                         .content(studentJson))
-                .andExpect(status().isOk()) //  200 response
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("rajuu"))
                 .andExpect(jsonPath("$.email").value("raj@gmail.com"))
-                .andExpect(jsonPath("$.email").value("rajgmail.com"))
                 .andExpect(jsonPath("$.mobileNumber").value("123456"))
                 .andExpect(jsonPath("$.password").value("raj@123"));
     }
-
 }

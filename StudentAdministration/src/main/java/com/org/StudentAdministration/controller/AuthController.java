@@ -4,7 +4,6 @@ import com.org.StudentAdministration.entity.LoginRequest;
 import com.org.StudentAdministration.entity.Student;
 import com.org.StudentAdministration.repository.StudentRepository;
 import com.org.StudentAdministration.service.JWTService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,40 +20,43 @@ import java.util.Optional;
 @RequestMapping("/auth")
 public class AuthController {
 
-	@Autowired
-	private StudentRepository studentRepository;
 
-	@Autowired
-	private PasswordEncoder passwordEncoder;
+    @Autowired
+    private StudentRepository studentRepository;
 
-	@Autowired
-	private JWTService jwtService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
-	@PostMapping("/register")
-	public ResponseEntity<String> register(@RequestBody Student student) {
-		if (studentRepository.findByName(student.getName()).isPresent()) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("name already registered!");
-		}
+    @Autowired
+    private JWTService jwtService;
 
-		student.setPassword(passwordEncoder.encode(student.getPassword()));
-		student.setRole("ROLE_USER");
-		studentRepository.save(student);
 
-		return ResponseEntity.ok("User registered successfully!");
-	}
+    @PostMapping("/register")
+    public ResponseEntity<String> register(@RequestBody Student student) {
+        if (studentRepository.findByName(student.getName()).isPresent()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("name already registered!");
+        }
 
-	@PostMapping("/login")
-	public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-		Optional<Student> studentOpt = studentRepository.findByName(loginRequest.getName());
+        student.setPassword(passwordEncoder.encode(student.getPassword()));
+        student.setRole("ROLE_USER");
+        studentRepository.save(student);
 
-		if (studentOpt.isPresent()) {
-			Student student = studentOpt.get();
-			if (passwordEncoder.matches(loginRequest.getPassword(), student.getPassword())) {
-				String token = jwtService.generateToken(student.getName());
-				return ResponseEntity.ok(Map.of("token", token));
-			}
-		}
+        return ResponseEntity.ok("User registered successfully!");
+    }
 
-		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
-	}
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+        Optional<Student> studentOpt = studentRepository.findByName(loginRequest.getName());
+
+        if (studentOpt.isPresent()) {
+            Student student = studentOpt.get();
+            if (passwordEncoder.matches(loginRequest.getPassword(), student.getPassword())) {
+                String token = jwtService.generateToken(student.getName());
+                return ResponseEntity.ok(Map.of("token", token));
+            }
+        }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
+    }
 }
+

@@ -60,7 +60,31 @@ class AuthControllerTest {
         assertEquals(token, ((Map<?, ?>) response.getBody()).get("token"));
     }
 
-    
+    @Test
+    void shouldReturnUnauthorizedForInvalidPassword() {
+        String username = "ramu";
+        String rawPassword = "ramu@321";
+        String encodedPassword = passwordEncoder.encode(rawPassword);
+
+        Student student = new Student();
+        student.setName(username);
+        student.setPassword(encodedPassword);
+
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setName(username);
+        loginRequest.setPassword(rawPassword);
+
+        when(studentRepository.findByName(username)).thenReturn(Optional.of(student));
+        when(passwordEncoder.matches(rawPassword, encodedPassword)).thenReturn(false);
+
+
+        ResponseEntity<?> response = authController.login(loginRequest);
+
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("Invalid email or password", response.getBody());
+    }
+
     @Test
     void shouldReturnUnauthorizedIfUserDoesNotExist() {
 
